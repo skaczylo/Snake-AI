@@ -29,11 +29,18 @@ class DrawBoard:
                 rect = pygame.Rect(col * self.cell_size, row * self.cell_size, self.cell_size, self.cell_size) #Rect(esquina_sup_izq,ancho,alto)
                 pygame.draw.rect(self.screen, color, rect)
 
+    def drawSnake2(self,speed):
+         for i in range(self.snake.length):
+            rect = pygame.Rect(int(self.snake.body[i][0])*self.cell_size +speed,
+                               int(self.snake.body[i][1])*self.cell_size+speed,
+                               self.cell_size,self.cell_size)
+            pygame.draw.rect(self.screen,SNAKE_COLOR,rect)
+            
     def drawSnake(self):
-
-       
         for i in range(self.snake.length):
-            rect = pygame.Rect(int(self.snake.body[i][0])*self.cell_size,int(self.snake.body[i][1])*self.cell_size,self.cell_size,self.cell_size)
+            rect = pygame.Rect(int(self.snake.body[i][0])*self.cell_size,
+                               int(self.snake.body[i][1])*self.cell_size,
+                               self.cell_size,self.cell_size)
             pygame.draw.rect(self.screen,SNAKE_COLOR,rect)
         
     
