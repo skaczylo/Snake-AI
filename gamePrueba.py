@@ -1,65 +1,53 @@
 import pygame
-import snake
-import drawGame
 
-class Game:
-    def __init__(self):
-        # pygame setup
-        pygame.init()
-        self.clock = pygame.time.Clock()
-        self.running = True
-        
-        # Variables del juego
-        self.serpiente = snake.Snake(pygame.Vector2(3, 1))
-        self.tablero = snake.Tablero(10, 10, self.serpiente)
-        self.board = drawGame.DrawBoard(self.tablero, 20, "Green", "White")
+# Definición de colores
+COLOR_CELL1 = (144, 238, 144)
+COLOR_CELL2 = (34, 139, 34)
+COLOR_FRAME = (102, 158, 102)
+CELL_SIZE = 30
+FRAME_MARGIN = 50
 
-        self.frecuency = 5  # Frecuencia: casillas por segundo
-        self.elapsed_time = 0.0  # Tiempo acumulado para mover la serpiente
+# Inicializar Pygame
+pygame.init()
 
-    def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event == snake.ENDGAMEEVENT:
-                self.running = False
-            elif event == snake.BODYCRASH:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_d:
-                    self.tablero.snakeChangesToward(snake.RIGHT)
-                if event.key == pygame.K_a:
-                    self.tablero.snakeChangesToward(snake.LEFT)
-                if event.key == pygame.K_s:
-                    self.tablero.snakeChangesToward(snake.DOWN)
-                if event.key == pygame.K_w:
-                    self.tablero.snakeChangesToward(snake.UP)
+# Crear la pantalla principal
+screen = pygame.display.set_mode((CELL_SIZE*10 + FRAME_MARGIN * 2, CELL_SIZE*10 + FRAME_MARGIN * 2))
 
-    def update(self, dt):
-        self.elapsed_time += dt
-        if self.elapsed_time >= 1 / self.frecuency:  # 1 / frecuency = T periodo
-            # Actualizar la posición de la serpiente
-            self.tablero.snakeEats()
-            self.tablero.snakeMoves()
-            self.board.drawBoard()
-            self.board.drawSnake()
-            self.board.drawApple(self.tablero.apple)
-            self.elapsed_time -= 1 / self.frecuency  # Reducir el tiempo acumulado
+# Crear una Surface para el tablero
+board = pygame.Surface((CELL_SIZE*10, CELL_SIZE*10))
 
-    def run(self):
-        while self.running:
-            dt = self.clock.tick(60) / 1000  # Delta time en segundos (para 60 FPS)
-            self.handle_events()
-            self.update(dt)
+# Reloj del juego para controlar los FPS
+clock = pygame.time.Clock()
 
-            # flip() the display to mostrar en pantalla
-            pygame.display.flip()
+# Dibujar el tablero
+for row in range(10):
+    for col in range(10):
+        color = COLOR_CELL1 if (row + col) % 2 == 0 else COLOR_CELL2
+        rect = pygame.Rect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        pygame.draw.rect(board, color, rect)
 
-        pygame.quit()
+# Bucle principal del juego
+running = True
+while running:
+    # Manejo de eventos
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-# Ejecutar el juego si el archivo es ejecutado directamente
-if __name__ == "__main__":
-    game = Game()
-    game.run()
-           
-    
+    # Rellenar la pantalla con un color de fondo (blanco en este caso)
+    screen.fill(COLOR_FRAME)
+
+    # Dibujar el marco alrededor del tablero
+    #pygame.draw.rect(screen, COLOR_FRAME, (FRAME_MARGIN, FRAME_MARGIN, CELL_SIZE*10, CELL_SIZE*10), 5)
+
+    # Colocar el tablero en la pantalla (con el margen añadido)
+    screen.blit(board, (FRAME_MARGIN, FRAME_MARGIN))
+
+    # Actualizar la pantalla
+    pygame.display.flip()
+
+    # Controlar los FPS
+    clock.tick(60)
+
+# Finalizar Pygame
+pygame.quit()

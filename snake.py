@@ -102,10 +102,13 @@ class Tablero:
     
     
     def snakeEats(self):
-
+        
         if self.snakeMustEat:
             self.snakeMustEat = False
             self.snake.eat(self.lastTail)
+            return 1
+        
+        return 0
       
 
     def bodyOutOfBoard(self,pos):
