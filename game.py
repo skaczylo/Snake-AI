@@ -37,9 +37,9 @@ while running:
             if event.key == pygame.K_a:
                 tablero.snakeChangesToward(snake.LEFT)
             if event.key == pygame.K_s:
-                tablero.snakeChangesToward(snake.UP)
-            if event.key == pygame.K_w:
                 tablero.snakeChangesToward(snake.DOWN)
+            if event.key == pygame.K_w:
+                tablero.snakeChangesToward(snake.UP)
 
 
 

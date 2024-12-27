@@ -6,8 +6,8 @@ ENDGAMEEVENT = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente
 
 LEFT = pygame.Vector2(-1,0)
 RIGHT = pygame.Vector2(1,0)
-UP = pygame.Vector2(0,1)
-DOWN=pygame.Vector2(0,-1)
+UP = pygame.Vector2(0,-1)
+DOWN=pygame.Vector2(0,+1)
 
 class Snake:
 
@@ -25,23 +25,12 @@ class Snake:
         self.toward = toward
 
 
-    def eat(self): 
-       """
+    def eat(self,newTail): 
+      
+       self.body.append(newTail)
+       self.tail = newTail
+       self.length +=1
        
-       Para crecer la cola de la serpiente nos vamos a basar en el anterior elemento a tail:
-
-       si compartes misma coordenada y => se añade a la izquierda o a la derecha 
-       si comparten misma coordenada x => se añade arriba o abajo
-
-       Caso particular : solo hay cabeza => se añade en direccion contraria a la que vaya la serpiente
-       """
-       newTail = pygame.Vector2(0,0)
-
-       if self.length == 1:
-            newTail = self.head
-            self.tail = newTail
-            self.body.append(newTail)
-            self.length +=1
 
     def move(self):
         newhead = self.head +self.toward
@@ -55,28 +44,78 @@ class Tablero:
         self.rows = rows
         self.cols = cols
         self.snake = snake
-        self.apple = pygame.Vector2(random.randint(0,self.cols),random.randint(0,self.rows))
+        self.apple = self.generateApple()
 
-    def snakeEats(self,towards):
-        if self.snake.head == self.apple:
-            self.snake.eat(self.snake.tail + towards)
+    def snakeEats(self):
+        """
+       
+       Para crecer la cola de la serpiente nos vamos a basar en el anterior elemento a tail:
+
+       si compartes misma coordenada y => se añade a la izquierda o a la derecha 
+       si comparten misma coordenada x => se añade arriba o abajo
+
+       Caso particular : solo hay cabeza => se añade en direccion contraria a la que vaya la serpiente
+       """
+        
+        if self.snake.length == 1:
+
+            if self.snake.toward == RIGHT:
+                newTailToward = LEFT
+            if self.snake.toward == LEFT:
+                newTailToward = RIGHT
+            if self.snake.toward == UP:
+                newTailToward = DOWN
+            if self.snake.toward == DOWN:
+                newTailToward =UP
+            
+            self.snake.eat(self.snake.head+newTailToward)
+
+        elif self.snake.length >1:
+            subTail = self.snake.body[self.snake.length-2]
+            tail = self.snake.tail
+
+            #Miramos que coordenada comparten
+            if subTail[0] == tail[0]: #comparten coordenada x
+                if subTail[1]<tail[1]: #Se anyade ARRIBA
+                    newTail = tail +UP
+                else:
+                    newTail = tail +DOWN
+            elif subTail[1] == tail[1]: #comparten coordenada y
+                if subTail[1]<tail[1]: #Se anyade a la derecha
+                    newTail = tail+RIGHT
+                else:
+                    newTail = tail+LEFT
+            
+                
+            self.snake.eat(newTail)
+
 
     def generateApple(self):
+        newApple = pygame.Vector2(random.randint(0,self.cols-1),random.randint(0,self.rows-1))
 
-        return pygame.Vector2(random.randint(0,self.cols),random.randint(0,self.rows))
+        while newApple in self.snake.body:
+             newApple = pygame.Vector2(random.randint(0,self.cols-1),random.randint(0,self.rows-1))
+        
+        return newApple
     
     def snakeChangesToward(self,toward):
         self.snake.changeToward(toward)
 
+
     def snakeMoves(self):
         self.snake.move()
 
-        if self.snake.head[0] >= self.cols or self.snake.head[0] <=0  or self.snake.head[1] == self.rows or self.snake.head[1] <= 0 :
+        if self.bodyOutOfBoard(self.snake.head) :
             pygame.event.post(ENDGAMEEVENT)
 
         if self.snake.head == self.apple: 
-            self.snake.eat()
             self.apple = self.generateApple()
+            self.snakeEats()
+    
+
+    def bodyOutOfBoard(self,pos):
+         return pos[0] > self.cols or pos[0] <0  or pos[1] > self.rows or pos[1] < 0 
+           
 
      
 
