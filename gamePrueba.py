@@ -1,35 +1,65 @@
 import pygame
+import snake
+import drawGame
 
-# Inicialización de Pygame
-pygame.init()
+class Game:
+    def __init__(self):
+        # pygame setup
+        pygame.init()
+        self.clock = pygame.time.Clock()
+        self.running = True
+        
+        # Variables del juego
+        self.serpiente = snake.Snake(pygame.Vector2(3, 1))
+        self.tablero = snake.Tablero(10, 10, self.serpiente)
+        self.board = drawGame.DrawBoard(self.tablero, 20, "Green", "White")
 
-# Configuración de la pantalla y el reloj
-screen = pygame.display.set_mode((800, 600))
-clock = pygame.time.Clock()
+        self.frecuency = 5  # Frecuencia: casillas por segundo
+        self.elapsed_time = 0.0  # Tiempo acumulado para mover la serpiente
 
-# Definir el objeto
-x = 100
-y = 100
-speed = 100  # Velocidad del objeto en píxeles por segundo
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event == snake.ENDGAMEEVENT:
+                self.running = False
+            elif event == snake.BODYCRASH:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    self.tablero.snakeChangesToward(snake.RIGHT)
+                if event.key == pygame.K_a:
+                    self.tablero.snakeChangesToward(snake.LEFT)
+                if event.key == pygame.K_s:
+                    self.tablero.snakeChangesToward(snake.DOWN)
+                if event.key == pygame.K_w:
+                    self.tablero.snakeChangesToward(snake.UP)
 
-# Bucle principal
-running = True
-while running:
-    dt = clock.tick(30) / 1000  # delta time en segundos
+    def update(self, dt):
+        self.elapsed_time += dt
+        if self.elapsed_time >= 1 / self.frecuency:  # 1 / frecuency = T periodo
+            # Actualizar la posición de la serpiente
+            self.tablero.snakeEats()
+            self.tablero.snakeMoves()
+            self.board.drawBoard()
+            self.board.drawSnake()
+            self.board.drawApple(self.tablero.apple)
+            self.elapsed_time -= 1 / self.frecuency  # Reducir el tiempo acumulado
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    def run(self):
+        while self.running:
+            dt = self.clock.tick(60) / 1000  # Delta time en segundos (para 60 FPS)
+            self.handle_events()
+            self.update(dt)
 
-    # Movimiento del objeto
-    x += speed * dt  # Mover el objeto en el eje X
+            # flip() the display to mostrar en pantalla
+            pygame.display.flip()
 
-    # Dibujar el fondo y el objeto
-    screen.fill((0, 0, 0))  # Fondo negro
-    pygame.draw.rect(screen, (255, 0, 0), (x, y, 50, 50))  # Rectángulo rojo
+        pygame.quit()
 
-    pygame.display.flip()
-
-pygame.quit()
-
-
+# Ejecutar el juego si el archivo es ejecutado directamente
+if __name__ == "__main__":
+    game = Game()
+    game.run()
+           
+    

@@ -1,7 +1,9 @@
 import pygame
 import random
 
-ENDGAMEEVENT = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente ha chocado"})
+ENDGAMEEVENT = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente ha chocado con la pared"})
+BODYCRASH = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente ha chocado con su cuerpo"})
+
 
 
 LEFT = pygame.Vector2(-1,0)
@@ -9,6 +11,9 @@ RIGHT = pygame.Vector2(1,0)
 UP = pygame.Vector2(0,-1)
 DOWN=pygame.Vector2(0,+1)
 
+
+class GameOverException(Exception):
+    pass
 class Snake:
 
     #nota usar vectores para la posicion, mejor que pares que no se pueden operar con ellos
@@ -18,7 +23,9 @@ class Snake:
         self.head = head    #es un vector2 (x,y)
         self.tail = head    # es un vector2 (x,y)
         self.body.append(head)  #lista de pares
-        self.length = 1
+        self.body.append(head+LEFT)
+        self.body.append(head+LEFT+LEFT)
+        self.length = 3
         self.toward = RIGHT 
         
     def changeToward(self,toward):
@@ -38,6 +45,7 @@ class Snake:
         self.head = self.body[0]
         self.tail = self.body[-1]
 
+
 class Tablero:
 
     def __init__(self,rows,cols,snake):
@@ -46,49 +54,8 @@ class Tablero:
         self.snake = snake
         self.apple = self.generateApple()
 
-    def snakeEats(self):
-        """
-       
-       Para crecer la cola de la serpiente nos vamos a basar en el anterior elemento a tail:
-
-       si compartes misma coordenada y => se añade a la izquierda o a la derecha 
-       si comparten misma coordenada x => se añade arriba o abajo
-
-       Caso particular : solo hay cabeza => se añade en direccion contraria a la que vaya la serpiente
-       """
-        
-        if self.snake.length == 1:
-
-            if self.snake.toward == RIGHT:
-                newTailToward = LEFT
-            if self.snake.toward == LEFT:
-                newTailToward = RIGHT
-            if self.snake.toward == UP:
-                newTailToward = DOWN
-            if self.snake.toward == DOWN:
-                newTailToward =UP
-            
-            self.snake.eat(self.snake.head+newTailToward)
-
-        elif self.snake.length >1:
-            subTail = self.snake.body[self.snake.length-2]
-            tail = self.snake.tail
-
-            #Miramos que coordenada comparten
-            if subTail[0] == tail[0]: #comparten coordenada x
-                if subTail[1]<tail[1]: #Se anyade ARRIBA
-                    newTail = tail +UP
-                else:
-                    newTail = tail +DOWN
-            elif subTail[1] == tail[1]: #comparten coordenada y
-                if subTail[1]<tail[1]: #Se anyade a la derecha
-                    newTail = tail+RIGHT
-                else:
-                    newTail = tail+LEFT
-            
-                
-            self.snake.eat(newTail)
-
+        self.snakeMustEat = False
+        self.lastTail =snake.tail 
 
     def generateApple(self):
         newApple = pygame.Vector2(random.randint(0,self.cols-1),random.randint(0,self.rows-1))
@@ -103,18 +70,49 @@ class Tablero:
 
 
     def snakeMoves(self):
-        self.snake.move()
+
+        """
+        La idea es que la serpiente crezca al comer la manzana. Sin embargo, es mejor no hacerlo al instante; sino esperar un turno. Es decir:
+        La serpiente alcanza la manzana
+        Se mueve
+        Al final de este movimiento es cuando crece
+
+        De esta manera el espacio libre que ha dejado la cola al moverse, lo vamos a ocupar como el nuevo miebro del cuerpo de la serpiente y asi no hay que calcular
+        posibles huecos libres etc
+
+        """
+        if self.snake.head == self.apple: 
+            self.snakeMustEat = True #Esperamos al siguiente ciclo para que crezca
+            self.lastTail = self.snake.tail #Guardamos la celda libre que va a dejar tras moverse
+            self.apple = self.generateApple()
 
         if self.bodyOutOfBoard(self.snake.head) :
             pygame.event.post(ENDGAMEEVENT)
+            raise GameOverException()
+        if self.bodyCrash():
+            pygame.event.post(BODYCRASH)
+            raise GameOverException()
 
-        if self.snake.head == self.apple: 
-            self.apple = self.generateApple()
-            self.snakeEats()
+
+  
+        self.snake.move()
+       
+
+        
     
+    
+    def snakeEats(self):
+
+        if self.snakeMustEat:
+            self.snakeMustEat = False
+            self.snake.eat(self.lastTail)
+      
 
     def bodyOutOfBoard(self,pos):
-         return pos[0] > self.cols or pos[0] <0  or pos[1] > self.rows or pos[1] < 0 
+         return pos[0] >= self.cols or pos[0] <0  or pos[1] >= self.rows or pos[1] < 0 
+    
+    def bodyCrash(self):
+        return self.snake.head in self.snake.body[1:]
            
 
      

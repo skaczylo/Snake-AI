@@ -1,60 +1,81 @@
-# Example file showing a circle moving on screen
-import pygame 
+import pygame
 import snake
 import drawGame
 
 
-
-# pygame setup
-pygame.init()
-
-clock = pygame.time.Clock()
-dt = 0
-num = 1
-running = True
-
-serpiente = snake.Snake(pygame.Vector2(1,1))
-tablero = snake.Tablero(10,10,serpiente)
-board = drawGame.DrawBoard(tablero,30,"Green","White")
-speed = 0.00000000001
-
-frecuency = 1 #frecuencia: numero de casillas que ha de avanzar la serpiente en un segundo
-
-elapsed_time = 0.0  # Tiempo acumulado para mover la serpiente
-while running:
-
-    dt = clock.tick(60) / 1000  # Delta time en segundos (para 60 FPS)
-    elapsed_time += dt
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event == snake.ENDGAMEEVENT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_d:
-                tablero.snakeChangesToward(snake.RIGHT)
-            if event.key == pygame.K_a:
-                tablero.snakeChangesToward(snake.LEFT)
-            if event.key == pygame.K_s:
-                tablero.snakeChangesToward(snake.DOWN)
-            if event.key == pygame.K_w:
-                tablero.snakeChangesToward(snake.UP)
+ROWS = 10
+COLS = 10
+X_SNAKE = 3 #Siempre va a ser 3
+Y_SNAKE = ROWS//2
+FRECUENCY = 5
+FPS = 60
 
 
+class Game:
 
-    if elapsed_time >= 1 / frecuency:  #1/frecuency = T periodo
-        # Actualizar la posición de la serpiente
-        tablero.snakeMoves()
-        elapsed_time -= 1 / frecuency  # Reducir el tiempo acumulado
+    def __init__(self):
 
-   
-    board.drawBoard()
-    board.drawSnake()
-    board.drawApple(tablero.apple)
-    # flip() the display to put your work on screen
+        num_apples = 0
+        self.snake = snake.Snake(pygame.Vector2(X_SNAKE,Y_SNAKE))
+        self.board =snake.Tablero(ROWS,COLS,self.snake)
+        self.graphics = drawGame.DrawBoard(self.board)
+        self.end = False
 
-    pygame.display.flip()
-   
 
-pygame.quit()
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.end = True
+            elif event == snake.ENDGAMEEVENT:
+                self.end = True
+            elif event == snake.BODYCRASH:
+                self.end = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    self.board.snakeChangesToward(snake.RIGHT)
+                if event.key == pygame.K_a:
+                    self.board.snakeChangesToward(snake.LEFT)
+                if event.key == pygame.K_s:
+                    self.board.snakeChangesToward(snake.DOWN)
+                if event.key == pygame.K_w:
+                    self.board.snakeChangesToward(snake.UP)
+
+    def update(self):
+        
+            # Actualizar la posición de la serpiente
+            self.board.snakeEats()
+            self.board.snakeMoves()
+            self.graphics.drawBoard()
+            self.graphics.drawSnake()
+            self.graphics.drawApple(self.board.apple)
+            
+
+    def run(self):
+         # pygame setup
+        pygame.init()
+        clock = pygame.time.Clock()
+        self.graphics.drawBoard()
+        elapsed_time = 0.0  # Tiempo acumulado para mover la serpiente
+
+        try:
+            while not self.end:
+                dt = clock.tick(FPS) / 1000  # Delta time en segundos (para 60 FPS)
+            
+                elapsed_time += dt
+                if elapsed_time >= 1 / FRECUENCY:  # 1 / frecuency = T periodo
+                    self.update()
+                    elapsed_time -= 1 / FRECUENCY  # Reducir el tiempo acumulado
+
+                self.handle_events()
+                # flip() the display to mostrar en pantalla
+                pygame.display.flip()
+        except snake.GameOverException as e:
+            print(f"Game over")
+        pygame.quit()
+
+# Ejecutar el juego si el archivo es ejecutado directamente
+if __name__ == "__main__":
+    game = Game()
+    game.run()
+           
+    
