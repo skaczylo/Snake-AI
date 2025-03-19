@@ -4,8 +4,6 @@ import random
 ENDGAMEEVENT = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente ha chocado con la pared"})
 BODYCRASH = pygame.event.Event(pygame.USEREVENT+1,{"Fin del juego":"Serpiente ha chocado con su cuerpo"})
 
-
-
 LEFT = pygame.Vector2(-1,0)
 RIGHT = pygame.Vector2(1,0)
 UP = pygame.Vector2(0,-1)
@@ -14,6 +12,8 @@ DOWN=pygame.Vector2(0,+1)
 
 class GameOverException(Exception):
     pass
+
+
 class Snake:
 
     #nota usar vectores para la posicion, mejor que pares que no se pueden operar con ellos
@@ -27,11 +27,12 @@ class Snake:
         self.body.append(head+LEFT+LEFT)
         self.length = 3
         self.toward = RIGHT 
-        
+    
+
     def changeToward(self,toward):
         self.toward = toward
 
-
+    
     def eat(self,newTail): 
       
        self.body.append(newTail)
@@ -66,9 +67,13 @@ class Tablero:
         return newApple
     
     def snakeChangesToward(self,toward):
-        self.snake.changeToward(toward)
+        if not self.checkDirection(toward):
+            self.snake.changeToward(toward)
 
-
+    def checkDirection(self,toward):
+        return (self.snake.toward == RIGHT and toward == LEFT) or (self.snake.toward == LEFT and toward ==RIGHT) or (self.snake.toward == UP and toward ==DOWN) or self.snake.toward == DOWN and toward ==UP
+            
+      
     def snakeMoves(self):
 
         """

@@ -1,6 +1,7 @@
 import pygame
 import snake
-import drawGame
+import drawGamePrueba
+
 
 ROWS = 10
 COLS = 10
@@ -9,14 +10,15 @@ Y_SNAKE = ROWS//2
 FRECUENCY = 5
 FPS = 60
 
+
 class Game:
 
     def __init__(self):
 
-        self.score = 0
+        num_apples = 0
         self.snake = snake.Snake(pygame.Vector2(X_SNAKE,Y_SNAKE))
         self.board =snake.Tablero(ROWS,COLS,self.snake)
-        self.graphics = drawGame.DrawGame(self)
+        self.graphics = drawGamePrueba.DrawBoard(self.board)
         self.end = False
 
 
@@ -41,10 +43,11 @@ class Game:
     def update(self):
         
             # Actualizar la posición de la serpiente
-            self.score += self.board.snakeEats()
+            self.board.snakeEats()
             self.board.snakeMoves()
-            self.graphics.drawGame(self.score)
+            self.graphics.drawGame()
             
+
     def run(self):
          # pygame setup
         pygame.init()
@@ -73,4 +76,3 @@ if __name__ == "__main__":
     game = Game()
     game.run()
            
-    
