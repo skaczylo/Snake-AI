@@ -26,11 +26,11 @@ class Snake:
         self.body.append(head+LEFT)
         self.body.append(head+LEFT+LEFT)
         self.length = 3
-        self.toward = RIGHT 
+        self.direction = RIGHT 
     
 
-    def changeToward(self,toward):
-        self.toward = toward
+    def changeDirection(self,direction):
+        self.direction = direction
 
     
     def eat(self,newTail): 
@@ -41,7 +41,7 @@ class Snake:
        
 
     def move(self):
-        newhead = self.head +self.toward
+        newhead = self.head +self.direction
         self.body = [newhead]+self.body[:-1]
         self.head = self.body[0]
         self.tail = self.body[-1]
@@ -66,12 +66,12 @@ class Tablero:
         
         return newApple
     
-    def snakeChangesToward(self,toward):
-        if not self.checkDirection(toward):
-            self.snake.changeToward(toward)
+    def snakeChangeDirection(self,direction):
+        if not self.checkDirection(direction):
+            self.snake.changeDirection(direction)
 
-    def checkDirection(self,toward):
-        return (self.snake.toward == RIGHT and toward == LEFT) or (self.snake.toward == LEFT and toward ==RIGHT) or (self.snake.toward == UP and toward ==DOWN) or self.snake.toward == DOWN and toward ==UP
+    def checkDirection(self,direction): #comprueba si la direccion es valida
+        return (self.snake.direction == RIGHT and direction == LEFT) or (self.snake.direction == LEFT and direction ==RIGHT) or (self.snake.direction == UP and direction ==DOWN) or (self.snake.direction == DOWN and direction ==UP)
             
       
     def snakeMoves(self):
@@ -91,21 +91,16 @@ class Tablero:
             self.lastTail = self.snake.tail #Guardamos la celda libre que va a dejar tras moverse
             self.apple = self.generateApple()
 
+        self.snake.move()
+        
         if self.bodyOutOfBoard(self.snake.head) :
             pygame.event.post(ENDGAMEEVENT)
             raise GameOverException()
-        if self.bodyCrash():
+        if self.bodyCrash(self.snake.head):
             pygame.event.post(BODYCRASH)
             raise GameOverException()
 
 
-  
-        self.snake.move()
-       
-
-        
-    
-    
     def snakeEats(self):
         
         if self.snakeMustEat:
@@ -119,8 +114,18 @@ class Tablero:
     def bodyOutOfBoard(self,pos):
          return pos[0] >= self.cols or pos[0] <0  or pos[1] >= self.rows or pos[1] < 0 
     
-    def bodyCrash(self):
-        return self.snake.head in self.snake.body[1:]
+    def bodyCrash(self,pos):
+        return pos in self.snake.body[1:]
+           
+
+     
+
+    
+    
+
+        
+            
+   
            
 
      

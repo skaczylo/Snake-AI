@@ -40,7 +40,6 @@ class DrawGame:
         self.cols = game.board.cols
         self.snake = game.board.snake
     
-
         self.canvas = pygame.Surface((CELL_SIZE*self.cols, CELL_SIZE*self.rows)) #Aqui es donde vamos a dibujar el tablero
         self.screen = pygame.display.set_mode((CELL_SIZE*self.cols+2*FRAME_MARGIN, CELL_SIZE*self.rows+2*FRAME_MARGIN))
 
@@ -76,13 +75,13 @@ class DrawGame:
 
         #Dibujamos la cabeza
         head_rect = pygame.Rect(int(self.snake.head[0])*self.cell_size,int(self.snake.head[1])*self.cell_size,self.cell_size,self.cell_size)
-        if self.snake.toward == snake.RIGHT:
+        if self.snake.direction == snake.RIGHT:
            self.canvas.blit(pygame.transform.scale(pygame.image.load(HEAD_RIGHT), (self.cell_size, self.cell_size)),head_rect)
-        if self.snake.toward == snake.LEFT:
+        if self.snake.direction == snake.LEFT:
             self.canvas.blit(pygame.transform.scale(pygame.image.load(HEAD_LEFT), (self.cell_size, self.cell_size)),head_rect)
-        if self.snake.toward == snake.UP:
+        if self.snake.direction == snake.UP:
             self.canvas.blit(pygame.transform.scale(pygame.image.load(HEAD_UP), (self.cell_size, self.cell_size)),head_rect)    
-        if self.snake.toward == snake.DOWN:
+        if self.snake.direction == snake.DOWN:
             self.canvas.blit(pygame.transform.scale(pygame.image.load(HEAD_DOWN), (self.cell_size, self.cell_size)),head_rect)
 
         #Dibujamos el resto del cuerpo: Tenemos que tener en cuenta si hay giros o no
